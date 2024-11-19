@@ -1,0 +1,25 @@
+= VRE - __V__ektor __R__ender __E__ngine
+
+A C++ library built on top of the Vulkan API(might change) to render 3D vector graphics(and also other
+stuff) directly without vertices. It works by shooting a pixel ray from the camera for each pixel on the
+screen and then checking if the ray intersects with any object in the scene. If it does, it calculates
+the color of the pixel based on the object's shader. This is a way to abstract the rendering process and
+still remain compatible with existing 3D models since you can just copy a function that checks for
+intersections.
+
+The main premise is that each object on the screen has its own shader that should be able to return
+things like color, normal, and a integrated code like "vre_stop" or "vre_mult" to control the way they
+interact with other objects.
+
+The reason I want this is that with vertices, you can never achieve a perfect sphere, and with
+SDFs, you can never use traditional 3D models (at least not without a lot of overhead). This tries
+to be in the spirit of SDFs but with the ability to use traditional 3D models.
+
+The advantage of this might not be seen with solid objects, but if you want a lot of magic particles
+or mind-bending effects, this might be the way to go. While traditional 3D rendering is good for
+constant objects, this approach will probably be better for dynamic objects since it is defined
+via functions instead of values.
+
+I am also planning on doing something similar to this as a physics engine and a 2D rendering engine
+since the same principles apply. If that happens, you could probably use the same shaders for all
+engines, which would obviously be a huge advantage.
