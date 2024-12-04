@@ -11,9 +11,10 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(external/glfw)
 
-add_library(VRE STATIC lib_src/vre.cpp
-        lib_src/vulkan_boilerplate.cpp
-        lib_includes/vulkan_boilerplate.h)
+file(GLOB_RECURSE LIB_SRC_FILES "lib_src/*.cpp")
+file(GLOB_RECURSE LIB_INCLUDE_FILES "lib_includes/*.h")
+
+add_library(VRE STATIC ${LIB_SRC_FILES} ${LIB_INCLUDE_FILES})
 target_include_directories(VRE PUBLIC lib_includes)
 target_link_libraries(VRE
         PRIVATE

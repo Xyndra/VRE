@@ -1,3 +1,5 @@
 .idea
 cmake-build-debug
 cmake-build-release
+shaders/**.spv
+/default_renderdoc.cap

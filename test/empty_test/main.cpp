@@ -11,6 +11,14 @@
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
 
+uint64_t frameCount = 0;
+void updateHook() {
+    frameCount++;
+    if (frameCount % 60 == 0) {
+        std::cout << "Frame: " << frameCount << std::endl;
+    }
+}
+
 int main() {
     glfwInit();
 
@@ -19,7 +27,7 @@ int main() {
 
     try {
         initVulkan(window);
-        mainLoop(window);
+        mainLoop(window, updateHook);
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
