@@ -1,5 +1,9 @@
 = VRE - __V__ektor __R__ender __E__ngine
 
+NOTE: This is windows only for now since I can't be bothered
+    testing on multiple platforms during development. This might
+    change in the future, but for now, it is what it is.
+
 A C++ library built on top of the Vulkan API(might change) to render 3D vector graphics(and also other
 stuff) directly without vertices. It works by shooting a pixel ray from the camera for each pixel on the
 screen and then checking if the ray intersects with any object in the scene. If it does, it calculates

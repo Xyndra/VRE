@@ -36,10 +36,11 @@ inline VkDescriptorSet descriptorSet;
 inline VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
 inline VkPipeline computePipeline;
 inline VkDescriptorPool descriptorPool;
-inline VkSemaphore imageAvailableSemaphore;
 inline VkImage storageImage;
 inline VkImageView storageImageView;
 inline VkDeviceMemory storageImageMemory;
+inline VkFence submitFence;
+inline std::vector<VkFence> inFlightFences;
 
 bool isDeviceSuitable(VkPhysicalDevice device);
 QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
@@ -56,12 +57,13 @@ void createCommandPool();
 void createDescriptorSetLayout();
 void createComputePipeline();
 void createSwapchain();
+void createFences();
 
+void waitNewImage(uint32_t* fenceIndex);
 void initVulkan(GLFWwindow* window);
 void createSurface(GLFWwindow* window);
 void mainLoop(GLFWwindow* window, void (*updateHook)());
 void cleanup(GLFWwindow* window);
-void createSemaphore(VkDevice device);
 void transitionImageLayoutExistingCB(VkCommandBuffer commandBuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 void transitionImageLayout(VkDevice device, VkCommandPool commandPool, VkQueue queue, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 void recordCommandBuffer(uint32_t width, uint32_t height);

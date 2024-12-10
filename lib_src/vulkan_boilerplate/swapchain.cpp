@@ -30,7 +30,7 @@ void createSwapchain() {
 
     createInfo.preTransform = capabilities.currentTransform;
     createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    createInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR;
+    createInfo.presentMode = VK_PRESENT_MODE_MAILBOX_KHR ;
     createInfo.clipped = VK_TRUE;
 
     if (vkCreateSwapchainKHR(vkDevice, &createInfo, nullptr, &swapchain) != VK_SUCCESS) {
@@ -212,8 +212,6 @@ void presentImage() {
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = &swapchain;
     presentInfo.pImageIndices = &imageIndex;
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = &imageAvailableSemaphore;
 
     vkQueuePresentKHR(graphicsQueue, &presentInfo);
 }

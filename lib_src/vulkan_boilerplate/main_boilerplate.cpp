@@ -56,13 +56,13 @@ void initVulkan(GLFWwindow* window) {
     createLogicalDevice();
     createSwapchain();
     createSwapchainImageViews();
+    createFences();
     createCommandPool();
     createStorageImage(800, 600);
     createDescriptorPool();
     createDescriptorSetLayout();
     allocateDescriptorSet();
     createComputePipeline();
-    createSemaphore(vkDevice);
 }
 
 void mainLoop(GLFWwindow* window, void (*updateHook)()) {
@@ -80,7 +80,11 @@ void mainLoop(GLFWwindow* window, void (*updateHook)()) {
 }
 
 void cleanup(GLFWwindow* window) {
-    vkDestroySemaphore(vkDevice, imageAvailableSemaphore, nullptr);
+    vkDeviceWaitIdle(vkDevice);
+    for (const auto fence : inFlightFences) {
+        vkDestroyFence(vkDevice, fence, nullptr);
+    }
+    vkDestroyFence(vkDevice, submitFence, nullptr);
     for (const auto imageView : swapchainImageViews) {
         vkDestroyImageView(vkDevice, imageView, nullptr);
     }

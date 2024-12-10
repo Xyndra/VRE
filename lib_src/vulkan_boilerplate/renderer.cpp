@@ -2,6 +2,8 @@
 // Created by Xyndra on 24.11.2024.
 //
 
+#include <chrono>
+
 #include "vulkan_boilerplate.h"
 #include "clear_screen_comp.h"
 #include <vulkan/vulkan.h>
@@ -119,15 +121,6 @@ void createCommandPool() {
     }
 }
 
-void createSemaphore(VkDevice device) {
-    VkSemaphoreCreateInfo semaphoreInfo{};
-    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-    if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create semaphore!");
-    }
-}
-
 void createStorageImage(const uint32_t width, const uint32_t height) {
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -173,11 +166,36 @@ void createStorageImage(const uint32_t width, const uint32_t height) {
     transitionImageLayout(vkDevice, commandPool, graphicsQueue, storageImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 }
 
-void recordCommandBuffer(const uint32_t width, const uint32_t height) {
-    if (const VkResult result = vkAcquireNextImageKHR(vkDevice, swapchain, UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex); result != VK_SUCCESS) {
+void createFences() {
+    VkFenceCreateInfo fenceInfo{};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceInfo.flags = 0;
+
+    if (vkCreateFence(vkDevice, &fenceInfo, nullptr, &submitFence) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create fence!");
+    }
+
+    inFlightFences.resize(imageCount);
+    for (auto & inFlightFence : inFlightFences) {
+        if (vkCreateFence(vkDevice, &fenceInfo, nullptr, &inFlightFence) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to create fence!");
+        }
+    }
+}
+
+void waitNewImage(uint32_t* fenceIndex) {
+    static uint32_t index = 0;
+
+    if (const VkResult result = vkAcquireNextImageKHR(vkDevice, swapchain, UINT64_MAX, nullptr, inFlightFences[index], &imageIndex); result != VK_SUCCESS) {
         std::cerr << "Failed to acquire next image!" << std::endl;
     }
 
+    // sync fence index with index
+    *fenceIndex = index;
+    index = (index + 1) % imageCount;
+}
+
+void recordCommandBuffer(const uint32_t width, const uint32_t height) {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.commandPool = commandPool;
@@ -262,25 +280,83 @@ void recordCommandBuffer(const uint32_t width, const uint32_t height) {
     }
 }
 
+void waitForFlightFence(const uint32_t index) {
+    if (const VkResult result = vkWaitForFences(vkDevice, 1, &inFlightFences[index], VK_TRUE, UINT64_MAX); result != VK_SUCCESS) {
+        std::cerr << "Failed to wait for fence!" << std::endl;
+    }
+
+    if (const VkResult result = vkResetFences(vkDevice, 1, &inFlightFences[index]); result != VK_SUCCESS) {
+        std::cerr << "Failed to reset fence!" << std::endl;
+    }
+}
+
 void render(const uint32_t width, const uint32_t height) {
+    // measure time
+    //const auto start = std::chrono::high_resolution_clock::now();
+
+    static uint32_t fenceIndex = 0;
+    static bool first = true;
+    if (first) {
+        first = false;
+        waitNewImage(&fenceIndex);
+    }
+
     recordCommandBuffer(width, height);
+
+    //const auto recordTime = std::chrono::high_resolution_clock::now();
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
 
-    VkResult result = vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    waitForFlightFence(fenceIndex);
+
+    //const auto flightFenceTime = std::chrono::high_resolution_clock::now();
+
+    VkResult result = vkQueueSubmit(graphicsQueue, 1, &submitInfo, submitFence);
     if (result != VK_SUCCESS) {
         std::cerr << "Failed to submit command buffer!" << std::endl;
     }
 
+    //const auto queueTime = std::chrono::high_resolution_clock::now();
+
     presentImage();
 
-    result = vkQueueWaitIdle(graphicsQueue);
+    //const auto presentTime = std::chrono::high_resolution_clock::now();
+
+    waitNewImage(&fenceIndex);
+
+    //const auto newImageTime = std::chrono::high_resolution_clock::now();
+
+    result = vkWaitForFences(vkDevice, 1, &submitFence, VK_TRUE, UINT64_MAX);
     if (result != VK_SUCCESS) {
-        std::cerr << "Failed to wait for queue!" << std::endl;
+        std::cerr << "Failed to wait for fence!" << std::endl;
+    }
+    if (result = vkResetFences(vkDevice, 1, &submitFence); result != VK_SUCCESS) {
+        std::cerr << "Failed to reset fence!" << std::endl;
     }
 
+    //const auto fenceTime = std::chrono::high_resolution_clock::now();
+
     vkFreeCommandBuffers(vkDevice, commandPool, 1, &commandBuffer);
+
+    //const auto end = std::chrono::high_resolution_clock::now();
+
+    //const std::chrono::duration<double> recordDuration = recordTime - start;
+    //const std::chrono::duration<double> flightFenceDuration = flightFenceTime - recordTime;
+    //const std::chrono::duration<double> queueDuration = queueTime - flightFenceTime;
+    //const std::chrono::duration<double> presentDuration = presentTime - queueTime;
+    //const std::chrono::duration<double> newImageDuration = newImageTime - presentTime;
+    //const std::chrono::duration<double> fenceDuration = fenceTime - newImageTime;
+    //const std::chrono::duration<double> totalDuration = end - start;
+    //std::cout << "--------------------------------" << std::endl;
+    //std::cout << "Record: " << recordDuration.count() << "s" << std::endl;
+    //std::cout << "Flight Fence: " << flightFenceDuration.count() << "s" << std::endl;
+    //std::cout << "Queue: " << queueDuration.count() << "s" << std::endl;
+    //std::cout << "Present: " << presentDuration.count() << "s" << std::endl;
+    //std::cout << "New Image: " << newImageDuration.count() << "s" << std::endl;
+    //std::cout << "Fence: " << fenceDuration.count() << "s" << std::endl;
+    //std::cout << "Total: " << totalDuration.count() << "s" << std::endl;
+    //std::cout << "--------------------------------" << std::endl;
 }
