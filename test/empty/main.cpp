@@ -3,37 +3,34 @@
 //
 
 #include "../../lib_includes/vre.h"
-#include <GLFW/glfw3.h>
 #include <cstdlib>
 #include <iostream>
-
-
-const uint32_t WIDTH = 800;
-const uint32_t HEIGHT = 600;
+#include <thread>
+#include <chrono>
 
 uint64_t frameCount = 0;
-void updateHook() {
+std::chrono::time_point<std::chrono::high_resolution_clock> start = std::chrono::high_resolution_clock::now();
+bool updateHook() {
     frameCount++;
     if (frameCount % 60 == 0) {
         std::cout << "Frame: " << frameCount << std::endl;
     }
+
+    if (start + std::chrono::seconds(20) < std::chrono::high_resolution_clock::now()) {
+        return false;
+    }
+    return true;
 }
 
 int main() {
-    glfwInit();
-
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
+    auto window = VREWindow();
 
     try {
-        initVulkan(window);
-        mainLoop(window, updateHook);
+        window.mainLoop(updateHook);
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
     }
-
-    cleanup(window);
 
     return EXIT_SUCCESS;
 }

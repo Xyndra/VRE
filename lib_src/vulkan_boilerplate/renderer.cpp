@@ -4,13 +4,13 @@
 
 #include <chrono>
 
-#include "vulkan_boilerplate.h"
+#include "window_vulkan_boilerplate.h"
+
 #include "clear_screen_comp.h"
-#include <vulkan/vulkan.h>
 #include <iostream>
+#include "global_vulkan_boilerplate.h"
 
-
-void createDescriptorPool() {
+void VulkanWindowBoilerplate::createDescriptorPool() {
     VkDescriptorPoolSize poolSize{};
     poolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
     poolSize.descriptorCount = 1;
@@ -26,7 +26,7 @@ void createDescriptorPool() {
     }
 }
 
-void allocateDescriptorSet() {
+void VulkanWindowBoilerplate::allocateDescriptorSet() {
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = descriptorPool;
@@ -54,7 +54,7 @@ void allocateDescriptorSet() {
     vkUpdateDescriptorSets(vkDevice, 1, &descriptorWrite, 0, nullptr);
 }
 
-void createDescriptorSetLayout() {
+void VulkanWindowBoilerplate::createDescriptorSetLayout() {
     VkDescriptorSetLayoutBinding uboLayoutBinding{};
     uboLayoutBinding.binding = 0;
     uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
@@ -72,7 +72,7 @@ void createDescriptorSetLayout() {
     }
 }
 
-void createComputePipeline() {
+void VulkanWindowBoilerplate::createComputePipeline() {
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = clear_screen_spv_len * sizeof(unsigned char);
@@ -110,7 +110,7 @@ void createComputePipeline() {
     vkDestroyShaderModule(vkDevice, computeShaderModule, nullptr);
 }
 
-void createCommandPool() {
+void VulkanWindowBoilerplate::createCommandPool() {
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.queueFamilyIndex = findQueueFamilies(physicalDevice).graphicsFamily.value();
@@ -121,7 +121,7 @@ void createCommandPool() {
     }
 }
 
-void createStorageImage(const uint32_t width, const uint32_t height) {
+void VulkanWindowBoilerplate::createStorageImage(const uint32_t width, const uint32_t height) {
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -163,10 +163,10 @@ void createStorageImage(const uint32_t width, const uint32_t height) {
         throw std::runtime_error("Fehler beim Erstellen des Image Views für das Storage Image");
     }
 
-    transitionImageLayout(vkDevice, commandPool, graphicsQueue, storageImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+    transitionImageLayout(vkDevice, commandPool, graphicsQueue, storageImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 }
 
-void createFences() {
+void VulkanWindowBoilerplate::createFences() {
     VkFenceCreateInfo fenceInfo{};
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = 0;
@@ -174,6 +174,7 @@ void createFences() {
     if (vkCreateFence(vkDevice, &fenceInfo, nullptr, &submitFence) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create fence!");
     }
+
 
     inFlightFences.resize(imageCount);
     for (auto & inFlightFence : inFlightFences) {
@@ -183,7 +184,7 @@ void createFences() {
     }
 }
 
-void waitNewImage(uint32_t* fenceIndex) {
+void VulkanWindowBoilerplate::waitNewImage(uint32_t* fenceIndex) {
     static uint32_t index = 0;
 
     if (const VkResult result = vkAcquireNextImageKHR(vkDevice, swapchain, UINT64_MAX, nullptr, inFlightFences[index], &imageIndex); result != VK_SUCCESS) {
@@ -195,7 +196,7 @@ void waitNewImage(uint32_t* fenceIndex) {
     index = (index + 1) % imageCount;
 }
 
-void recordCommandBuffer(const uint32_t width, const uint32_t height) {
+void VulkanWindowBoilerplate::recordCommandBuffer(const uint32_t width, const uint32_t height) {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.commandPool = commandPool;
@@ -242,8 +243,8 @@ void recordCommandBuffer(const uint32_t width, const uint32_t height) {
     copyRegion.extent.height = height;
     copyRegion.extent.depth = 1;
 
-    transitionImageLayoutExistingCB(commandBuffer, storageImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-    transitionImageLayoutExistingCB(commandBuffer, swapchainImages[imageIndex], VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    transitionImageLayoutExistingCB(commandBuffer, storageImage, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    transitionImageLayoutExistingCB(commandBuffer, swapchainImages[imageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
     vkCmdCopyImage(
         commandBuffer,
@@ -273,24 +274,26 @@ void recordCommandBuffer(const uint32_t width, const uint32_t height) {
         1, &presentBarrier
     );
 
-    transitionImageLayoutExistingCB(commandBuffer, storageImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
+    transitionImageLayoutExistingCB(commandBuffer, storageImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
 
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
         throw std::runtime_error("Failed to record command buffer!");
     }
 }
 
-void waitForFlightFence(const uint32_t index) {
-    if (const VkResult result = vkWaitForFences(vkDevice, 1, &inFlightFences[index], VK_TRUE, UINT64_MAX); result != VK_SUCCESS) {
+void VulkanWindowBoilerplate::waitForFlightFence(const uint32_t index) const {
+    VkResult result = vkWaitForFences(vkDevice, 1, &inFlightFences[index], VK_TRUE, UINT64_MAX);
+    if (result != VK_SUCCESS) {
         std::cerr << "Failed to wait for fence!" << std::endl;
     }
 
-    if (const VkResult result = vkResetFences(vkDevice, 1, &inFlightFences[index]); result != VK_SUCCESS) {
+    result = vkResetFences(vkDevice, 1, &inFlightFences[index]);
+    if (result != VK_SUCCESS) {
         std::cerr << "Failed to reset fence!" << std::endl;
     }
 }
 
-void render(const uint32_t width, const uint32_t height) {
+void VulkanWindowBoilerplate::render(const uint32_t width, const uint32_t height) {
     // measure time
     //const auto start = std::chrono::high_resolution_clock::now();
 

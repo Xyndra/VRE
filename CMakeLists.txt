@@ -22,7 +22,7 @@ target_link_libraries(VRE
             glfw)
 
 add_executable(VRE_EMPTY_TEST
-        test/empty_test/main.cpp)
+        test/empty/main.cpp)
 add_dependencies(VRE_EMPTY_TEST VRE)
 target_link_libraries(VRE_EMPTY_TEST
         VRE

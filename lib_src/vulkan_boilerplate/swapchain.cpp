@@ -2,11 +2,12 @@
 // Created by Xyndra on 01.12.2024.
 //
 
-#include "vulkan_boilerplate.h"
-#include <vulkan/vulkan.h>
-#include <stdexcept>
+#include "window_vulkan_boilerplate.h"
 
-void createSwapchain() {
+#include <stdexcept>
+#include "global_vulkan_boilerplate.h"
+
+void VulkanWindowBoilerplate::createSwapchain() {
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     createInfo.surface = surface;
@@ -42,7 +43,7 @@ void createSwapchain() {
     vkGetSwapchainImagesKHR(vkDevice, swapchain, &imageCount, swapchainImages.data());
 }
 
-void createSwapchainImageViews() {
+void VulkanWindowBoilerplate::createSwapchainImageViews() {
     swapchainImageViews.resize(swapchainImages.size());
 
     for (size_t i = 0; i < swapchainImages.size(); i++) {
@@ -67,7 +68,7 @@ void createSwapchainImageViews() {
     }
 }
 
-void transitionImageLayoutExistingCB(VkCommandBuffer commandBuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
+void VulkanWindowBoilerplate::transitionImageLayoutExistingCB(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) {
     VkImageMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
     barrier.oldLayout = oldLayout;
@@ -129,7 +130,7 @@ void transitionImageLayoutExistingCB(VkCommandBuffer commandBuffer, VkImage imag
     );
 }
 
-void transitionImageLayout(VkDevice device, VkCommandPool commandPool, VkQueue queue, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
+void VulkanWindowBoilerplate::transitionImageLayout(VkDevice device, VkCommandPool commandPool, VkQueue queue, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) {
     VkCommandBuffer commandBuffer;
 
     VkCommandBufferAllocateInfo allocInfo{};
@@ -206,7 +207,7 @@ void transitionImageLayout(VkDevice device, VkCommandPool commandPool, VkQueue q
     vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 }
 
-void presentImage() {
+void VulkanWindowBoilerplate::presentImage() {
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     presentInfo.swapchainCount = 1;
