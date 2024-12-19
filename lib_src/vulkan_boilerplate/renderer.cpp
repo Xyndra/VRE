@@ -327,8 +327,6 @@ void VulkanWindowBoilerplate::render(const uint32_t width, const uint32_t height
         std::cerr << "Failed to submit command buffer!" << std::endl;
     }
 
-    transitionImageLayout(vkDevice, commandPool, graphicsQueue, swapchainImages[imageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-
     const auto queueTime = std::chrono::high_resolution_clock::now();
 
     presentImage();
