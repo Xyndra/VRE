@@ -2,12 +2,12 @@
 // Created by Xyndra on 14.12.2024.
 //
 
-#include "global_vulkan_boilerplate.h"
+#include "vulkan_boilerplate.h"
 #include <stdexcept>
 #include <vector>
 #include <vulkan/vulkan.h>
 
-void pickPhysicalDevice() {
+void VulkanWindowBoilerplate::pickPhysicalDevice() {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 

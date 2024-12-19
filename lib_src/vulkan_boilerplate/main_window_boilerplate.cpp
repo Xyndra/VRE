@@ -2,8 +2,7 @@
 // Created by Xyndra on 19.11.2024.
 //
 
-#include "window_vulkan_boilerplate.h"
-#include "global_vulkan_boilerplate.h"
+#include "vulkan_boilerplate.h"
 #include <glfw/glfw3.h>
 
 #include <stdexcept>
@@ -17,6 +16,9 @@ VulkanWindowBoilerplate::VulkanWindowBoilerplate(VulkanWindowAttributes *window_
 }
 
 void VulkanWindowBoilerplate::initVulkan() {
+    createInstance();
+    pickPhysicalDevice();
+    setupDebugMessenger();
     createSurface();
     createLogicalDevice();
     createSwapchain();
@@ -68,6 +70,8 @@ void VulkanWindowBoilerplate::cleanup() {
     vkDestroyCommandPool(vkDevice, commandPool, nullptr);
     vkDestroyDevice(vkDevice, nullptr);
     vkDestroySurfaceKHR(instance, surface, nullptr);
+    cleanupDebugMessenger();
+    vkDestroyInstance(instance, nullptr);
     glfwDestroyWindow(window);
 }
 

@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "window_vulkan_boilerplate.h"
+#include "vulkan_boilerplate.h"
 #include <optional>
 
 void hello();

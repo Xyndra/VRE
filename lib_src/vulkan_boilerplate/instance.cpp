@@ -1,16 +1,11 @@
 //
-// Created by Xyndra on 14.12.2024.
+// Created by Xyndra on 15.12.2024.
 //
 
-#include "global_vulkan_boilerplate.h"
-
+#include "vulkan_boilerplate.h"
 #include <iostream>
-#include <vector>
-#include <vulkan/vulkan.h>
 
-#include "GLFW/glfw3.h"
-
-void createInstance() {
+void VulkanWindowBoilerplate::createInstance() {
     // debug extensions
     uint32_t extensionCount;
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
@@ -56,15 +51,4 @@ void createInstance() {
     if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
         throw std::runtime_error("Fehler beim Erstellen der Vulkan-Instanz!");
     }
-}
-
-void initGlobalVulkan() {
-    createInstance();
-    setupDebugMessenger();
-    pickPhysicalDevice();
-}
-
-void cleanupGlobalVulkan() {
-    cleanupDebugMessenger();
-    vkDestroyInstance(instance, nullptr);
 }

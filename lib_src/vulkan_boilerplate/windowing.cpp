@@ -2,12 +2,9 @@
 // Created by Xyndra on 01.12.2024.
 //
 
-#include <iostream>
-
-#include "window_vulkan_boilerplate.h"
+#include "vulkan_boilerplate.h"
 #include <stdexcept>
-
-#include "global_vulkan_boilerplate.h"
+#include <iostream>
 
 GLFWwindow* createWindow(const int32_t width, const int32_t height, const char* title) {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);

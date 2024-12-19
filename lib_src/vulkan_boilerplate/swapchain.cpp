@@ -2,10 +2,9 @@
 // Created by Xyndra on 01.12.2024.
 //
 
-#include "window_vulkan_boilerplate.h"
+#include "vulkan_boilerplate.h"
 
 #include <stdexcept>
-#include "global_vulkan_boilerplate.h"
 
 void VulkanWindowBoilerplate::createSwapchain() {
     VkSwapchainCreateInfoKHR createInfo{};
@@ -180,6 +179,12 @@ void VulkanWindowBoilerplate::transitionImageLayout(VkDevice device, VkCommandPo
         barrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
 
         sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        destinationStage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+    } else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
         destinationStage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
     } else {
         throw std::invalid_argument("Unsupported layout transition!");

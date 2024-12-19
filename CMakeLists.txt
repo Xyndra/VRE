@@ -27,3 +27,10 @@ add_dependencies(VRE_EMPTY_TEST VRE)
 target_link_libraries(VRE_EMPTY_TEST
         VRE
         glfw)
+
+add_executable(VRE_TWO_WINDOWS_TEST
+        test/two_windows/main.cpp)
+add_dependencies(VRE_TWO_WINDOWS_TEST VRE)
+target_link_libraries(VRE_TWO_WINDOWS_TEST
+        VRE
+        glfw)

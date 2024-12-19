@@ -5,6 +5,7 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
 #include <vector>
 #include <vulkan/vulkan.h>
 #include "GLFW/glfw3.h"
@@ -17,14 +18,32 @@ struct VulkanWindowAttributes {
 
 GLFWwindow* createWindow(int32_t width, int32_t height, const char* title);
 
+struct QueueFamilyIndices {
+    std::optional<uint32_t> graphicsFamily;
+
+    [[nodiscard]] bool isComplete() const {
+        return graphicsFamily.has_value();
+    }
+};
+
+QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+bool isDeviceSuitable(VkPhysicalDevice device);
+void pickPhysicalDevice();
+
+uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
 class VulkanWindowBoilerplate {
 public:
     explicit VulkanWindowBoilerplate(VulkanWindowAttributes* window_attributes);
     ~VulkanWindowBoilerplate();
     void mainLoop(bool (*updateHook)());
+
+    void pickPhysicalDevice();
+
 private:
     VulkanWindowAttributes* attributes;
     GLFWwindow* window;
+    VkInstance instance;
     VkSurfaceKHR surface;
     VkDevice vkDevice;
     VkQueue graphicsQueue;
@@ -42,6 +61,9 @@ private:
     VkImageView storageImageView;
     VkDeviceMemory storageImageMemory;
     VkFence submitFence;
+    VkPhysicalDevice physicalDevice;
+    uint32_t fenceIndex = 0;
+    bool firstRender = true;
     std::vector<VkFence> inFlightFences;
     std::vector<VkImage> swapchainImages;
     std::vector<VkImageView> swapchainImageViews;
@@ -56,6 +78,10 @@ private:
     void createComputePipeline();
     void createSwapchain();
     void createFences();
+    void createInstance();
+
+    void setupDebugMessenger();
+    void cleanupDebugMessenger();
 
     void waitNewImage(uint32_t* fenceIndex);
     void initVulkan();

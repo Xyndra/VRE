@@ -2,7 +2,7 @@
 // Created by Xyndra on 01.12.2024.
 //
 
-#include "global_vulkan_boilerplate.h"
+#include "vulkan_boilerplate.h"
 #include <vulkan/vulkan.h>
 #include <stdexcept>
 

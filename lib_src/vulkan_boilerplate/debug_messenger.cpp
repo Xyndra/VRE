@@ -2,7 +2,7 @@
 // Created by Xyndra on 14.12.2024.
 //
 
-#include "global_vulkan_boilerplate.h"
+#include "vulkan_boilerplate.h"
 #include <iostream>
 #include <vulkan/vulkan.h>
 
@@ -19,7 +19,7 @@ PFN_vkDestroyDebugUtilsMessengerEXT my_vkDestroyDebugUtilsMessengerEXT = nullptr
 
 VkDebugUtilsMessengerEXT debugMessenger;
 
-void setupDebugMessenger() {
+void VulkanWindowBoilerplate::setupDebugMessenger() {
     VkDebugUtilsMessengerCreateInfoEXT createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
@@ -46,6 +46,6 @@ void setupDebugMessenger() {
     }
 }
 
-void cleanupDebugMessenger() {
+void VulkanWindowBoilerplate::cleanupDebugMessenger() {
     my_vkDestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
 }
