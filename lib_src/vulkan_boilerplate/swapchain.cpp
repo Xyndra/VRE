@@ -30,7 +30,8 @@ void VulkanWindowBoilerplate::createSwapchain() {
 
     createInfo.preTransform = capabilities.currentTransform;
     createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    createInfo.presentMode = VK_PRESENT_MODE_MAILBOX_KHR ;
+    // NOTE: Change back to VK_PRESENT_MODE_MAILBOX_KHR if there is screen tearing
+    createInfo.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR ;
     createInfo.clipped = VK_TRUE;
 
     if (vkCreateSwapchainKHR(vkDevice, &createInfo, nullptr, &swapchain) != VK_SUCCESS) {

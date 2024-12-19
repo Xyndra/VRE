@@ -195,8 +195,6 @@ void VulkanWindowBoilerplate::waitNewImage(uint32_t* fenceIndex) {
     if (*fenceIndex != imageIndex) {
         std::cerr << "Fence index does not match image index! (" << *fenceIndex << " != " << imageIndex << ")" << std::endl;
     }
-
-    std::cout << "Starting to wait for fence " << *fenceIndex << "(thread id: " << std::this_thread::get_id() << ")" << std::endl;
 }
 
 void VulkanWindowBoilerplate::recordCommandBuffer(const uint32_t width, const uint32_t height) {
@@ -285,7 +283,6 @@ void VulkanWindowBoilerplate::recordCommandBuffer(const uint32_t width, const ui
 }
 
 void VulkanWindowBoilerplate::waitForFlightFence(const uint32_t index) const {
-    std::cout << "Idling for fence " << index << "(thread id: " << std::this_thread::get_id() << ")" << std::endl;
     VkResult result = vkWaitForFences(vkDevice, 1, &inFlightFences[index], VK_TRUE, UINT64_MAX);
     if (result != VK_SUCCESS) {
         std::cerr << "Failed to wait for fence!" << std::endl;
@@ -311,7 +308,7 @@ void VulkanWindowBoilerplate::render(const uint32_t width, const uint32_t height
 
     recordCommandBuffer(width, height);
 
-    const auto recordTime = std::chrono::high_resolution_clock::now();
+    // const auto recordTime = std::chrono::high_resolution_clock::now();
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -320,22 +317,22 @@ void VulkanWindowBoilerplate::render(const uint32_t width, const uint32_t height
 
     waitForFlightFence(fenceIndex);
 
-    const auto flightFenceTime = std::chrono::high_resolution_clock::now();
+    // const auto flightFenceTime = std::chrono::high_resolution_clock::now();
 
     VkResult result = vkQueueSubmit(graphicsQueue, 1, &submitInfo, submitFence);
     if (result != VK_SUCCESS) {
         std::cerr << "Failed to submit command buffer!" << std::endl;
     }
 
-    const auto queueTime = std::chrono::high_resolution_clock::now();
+    // const auto queueTime = std::chrono::high_resolution_clock::now();
 
     presentImage();
 
-    const auto presentTime = std::chrono::high_resolution_clock::now();
+    // const auto presentTime = std::chrono::high_resolution_clock::now();
 
     waitNewImage(&fenceIndex);
 
-    const auto newImageTime = std::chrono::high_resolution_clock::now();
+    // const auto newImageTime = std::chrono::high_resolution_clock::now();
 
     result = vkWaitForFences(vkDevice, 1, &submitFence, VK_TRUE, UINT64_MAX);
     if (result != VK_SUCCESS) {
@@ -345,26 +342,26 @@ void VulkanWindowBoilerplate::render(const uint32_t width, const uint32_t height
         std::cerr << "Failed to reset fence!" << std::endl;
     }
 
-    const auto fenceTime = std::chrono::high_resolution_clock::now();
+    // const auto fenceTime = std::chrono::high_resolution_clock::now();
 
     vkFreeCommandBuffers(vkDevice, commandPool, 1, &commandBuffer);
 
     const auto end = std::chrono::high_resolution_clock::now();
 
-    const std::chrono::duration<double> recordDuration = recordTime - start;
-    const std::chrono::duration<double> flightFenceDuration = flightFenceTime - recordTime;
-    const std::chrono::duration<double> queueDuration = queueTime - flightFenceTime;
-    const std::chrono::duration<double> presentDuration = presentTime - queueTime;
-    const std::chrono::duration<double> newImageDuration = newImageTime - presentTime;
-    const std::chrono::duration<double> fenceDuration = fenceTime - newImageTime;
+    // const std::chrono::duration<double> recordDuration = recordTime - start;
+    // const std::chrono::duration<double> flightFenceDuration = flightFenceTime - recordTime;
+    // const std::chrono::duration<double> queueDuration = queueTime - flightFenceTime;
+    // const std::chrono::duration<double> presentDuration = presentTime - queueTime;
+    // const std::chrono::duration<double> newImageDuration = newImageTime - presentTime;
+    // const std::chrono::duration<double> fenceDuration = fenceTime - newImageTime;
     const std::chrono::duration<double> totalDuration = end - start;
-    std::cout << "--------------------------------" << std::endl;
-    std::cout << "Record: " << recordDuration.count() << "s" << std::endl;
-    std::cout << "Flight Fence: " << flightFenceDuration.count() << "s" << std::endl;
-    std::cout << "Queue: " << queueDuration.count() << "s" << std::endl;
-    std::cout << "Present: " << presentDuration.count() << "s" << std::endl;
-    std::cout << "New Image: " << newImageDuration.count() << "s" << std::endl;
-    std::cout << "Fence: " << fenceDuration.count() << "s" << std::endl;
+    // std::cout << "--------------------------------" << std::endl;
+    // std::cout << "Record: " << recordDuration.count() << "s" << std::endl;
+    // std::cout << "Flight Fence: " << flightFenceDuration.count() << "s" << std::endl;
+    // std::cout << "Queue: " << queueDuration.count() << "s" << std::endl;
+    // std::cout << "Present: " << presentDuration.count() << "s" << std::endl;
+    // std::cout << "New Image: " << newImageDuration.count() << "s" << std::endl;
+    // std::cout << "Fence: " << fenceDuration.count() << "s" << std::endl;
     std::cout << "Total: " << totalDuration.count() << "s" << std::endl;
     std::cout << "--------------------------------" << std::endl;
 }
