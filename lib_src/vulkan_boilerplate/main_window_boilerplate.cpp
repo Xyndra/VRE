@@ -78,31 +78,30 @@ void VulkanWindowBoilerplate::cleanup() {
 void VulkanWindowBoilerplate::createLogicalDevice() {
     auto [graphicsFamily] = findQueueFamilies(physicalDevice);
 
-    VkDeviceQueueCreateInfo queueCreateInfo{};
-    queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queueCreateInfo.queueFamilyIndex = graphicsFamily.value();
-    queueCreateInfo.queueCount = 1;
-
     constexpr float queuePriority = 1.0f;
-    queueCreateInfo.pQueuePriorities = &queuePriority;
+    const VkDeviceQueueCreateInfo queueCreateInfo = {
+        .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+        .queueFamilyIndex = graphicsFamily.value(),
+        .queueCount = 1,
+        .pQueuePriorities = &queuePriority
+    };
 
-    constexpr VkPhysicalDeviceFeatures deviceFeatures{};
-
-    VkDeviceCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.pQueueCreateInfos = &queueCreateInfo;
-    createInfo.queueCreateInfoCount = 1;
-    createInfo.pEnabledFeatures = &deviceFeatures;
-
+    constexpr VkPhysicalDeviceFeatures deviceFeatures = {};
     const std::vector deviceExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
 
-    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-    createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+    const VkDeviceCreateInfo createInfo = {
+        .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+        .queueCreateInfoCount = 1,
+        .pQueueCreateInfos = &queueCreateInfo,
+        .enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size()),
+        .ppEnabledExtensionNames = deviceExtensions.data(),
+        .pEnabledFeatures = &deviceFeatures
+    };
 
     if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &vkDevice) != VK_SUCCESS) {
-        throw std::runtime_error("Fehler beim Erstellen des logischen Geräts!");
+        throw std::runtime_error("Failed to create logical device!");
     }
 
     vkGetDeviceQueue(vkDevice, graphicsFamily.value(), 0, &graphicsQueue);

@@ -32,6 +32,9 @@ void pickPhysicalDevice();
 
 uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
+void transitionImageLayoutExistingCB(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
+void transitionImageLayout(VkDevice device, VkCommandPool commandPool, VkQueue queue, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
+
 class VulkanWindowBoilerplate {
 public:
     explicit VulkanWindowBoilerplate(VulkanWindowAttributes* window_attributes);
@@ -44,6 +47,8 @@ private:
     VulkanWindowAttributes* attributes;
     GLFWwindow* window;
     VkInstance instance;
+    PFN_vkDestroyDebugUtilsMessengerEXT my_vkDestroyDebugUtilsMessengerEXT = nullptr;
+    VkDebugUtilsMessengerEXT debugMessenger;
     VkSurfaceKHR surface;
     VkDevice vkDevice;
     VkQueue graphicsQueue;
@@ -81,14 +86,13 @@ private:
     void createInstance();
 
     void setupDebugMessenger();
-    void cleanupDebugMessenger();
+    void cleanupDebugMessenger() const;
 
     void waitNewImage(uint32_t* fenceIndex);
     void initVulkan();
     void createSurface();
     void cleanup();
-    void transitionImageLayoutExistingCB(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
-    void transitionImageLayout(VkDevice device, VkCommandPool commandPool, VkQueue queue, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
+
     void recordCommandBuffer(uint32_t width, uint32_t height);
 
     void waitForFlightFence(uint32_t index) const;

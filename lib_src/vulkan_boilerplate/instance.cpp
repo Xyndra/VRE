@@ -12,8 +12,8 @@ void VulkanWindowBoilerplate::createInstance() {
     std::vector<VkExtensionProperties> availableExtensions(extensionCount);
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, availableExtensions.data());
     std::cout << "Available extensions:" << std::endl;
-    for (const auto& extension : availableExtensions) {
-        std::cout << '\t' << extension.extensionName << std::endl;
+    for (const auto&[extensionName, specVersion] : availableExtensions) {
+        std::cout << '\t' << extensionName << std::endl;
     }
 
     // debug vulkan version
@@ -49,6 +49,6 @@ void VulkanWindowBoilerplate::createInstance() {
     createInfo.ppEnabledLayerNames = validationLayers.data();
 
     if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
-        throw std::runtime_error("Fehler beim Erstellen der Vulkan-Instanz!");
+        throw std::runtime_error("Error creating instance!");
     }
 }
